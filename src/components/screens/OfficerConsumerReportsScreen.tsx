@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { MOCK_CONSUMER_REPORTS } from '../../data/mockData';
 import { decryptData } from '../../services/cryptoService';
+import { getConsumerReportImage, DEFAULT_COMMODITY_IMAGE } from '../../utils/imageUtils';
 
 const STATUS_META: Record<ConsumerReport['status'], { label: string; bg: string; text: string }> = {
   submitted:        { label: 'New',          bg: 'bg-blue-50 border-blue-200',       text: 'text-blue-700'    },
@@ -27,7 +28,7 @@ const ConsumerStatementText: React.FC<{ note: string }> = ({ note }) => {
 };
 
 export const OfficerConsumerReportsScreen: React.FC = () => {
-  const { consumerReports } = useApp();
+  const { consumerReports, inspections } = useApp();
 
   // Merge live reports with seeded mock data (deduplicated by id)
   const allReports = [
@@ -132,8 +133,11 @@ export const OfficerConsumerReportsScreen: React.FC = () => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-2.5">
                       <img
-                        src={report.product_image}
+                        src={getConsumerReportImage(report, inspections)}
                         alt={report.product_name}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = DEFAULT_COMMODITY_IMAGE;
+                        }}
                         className="w-11 h-11 rounded-xl object-cover border border-slate-200 flex-shrink-0"
                       />
                       <div>

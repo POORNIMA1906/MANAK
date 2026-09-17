@@ -126,8 +126,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       const apiReports = await fetchConsumerReportsApi();
       if (apiReports && apiReports.length > 0) {
-        setConsumerReports(apiReports);
-        saveStoredConsumerReports(apiReports);
+        const localReports = getStoredConsumerReports();
+        const mergedReports = apiReports.map(apiRep => {
+          const match = localReports.find(l => l.id === apiRep.id || l.reference_id === apiRep.reference_id);
+          if (match && match.product_image && !apiRep.product_image) {
+            return {
+              ...apiRep,
+              product_image: match.product_image
+            };
+          }
+          return apiRep;
+        });
+        setConsumerReports(mergedReports);
+        saveStoredConsumerReports(mergedReports);
       } else {
         setConsumerReports(getStoredConsumerReports());
       }
@@ -378,6 +389,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     try {
       const created = await submitConsumerReportApi(reportPayload);
+      if (!created.product_image && primaryImg) {
+        created.product_image = primaryImg;
+      }
       saveConsumerReport(created);
       setConsumerReports(prev => [created, ...prev]);
       return created;

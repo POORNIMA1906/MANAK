@@ -117,7 +117,7 @@ export async function saveConsumerReportDirectToSupabase(report: ConsumerReport)
       reference_id: report.reference_id,
       product_name: report.product_name,
       brand: report.brand || null,
-      product_image: report.product_image?.length && report.product_image.length < 1000 ? report.product_image : null,
+      product_image: report.product_image || null,
       violations_summary: report.violations_summary || [],
       consumer_note: report.consumer_note || null,
       status: report.status || 'submitted',

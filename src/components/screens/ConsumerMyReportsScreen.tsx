@@ -3,9 +3,10 @@ import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
 import { BottomNav } from '../common/BottomNav';
 import { FileCheck, Clock, CheckCircle2, AlertTriangle, ShieldCheck, ChevronRight, Inbox, Camera } from 'lucide-react';
+import { getConsumerReportImage, DEFAULT_COMMODITY_IMAGE } from '../../utils/imageUtils';
 
 export const ConsumerMyReportsScreen: React.FC = () => {
-  const { consumerReports, navigateTo } = useApp();
+  const { consumerReports, inspections, navigateTo } = useApp();
 
   return (
     <div className="w-full h-full bg-[#F5F6F8] flex flex-col justify-between overflow-hidden">
@@ -68,8 +69,11 @@ export const ConsumerMyReportsScreen: React.FC = () => {
               {/* Product Info */}
               <div className="flex items-start space-x-3">
                 <img
-                  src={report.product_image}
+                  src={getConsumerReportImage(report, inspections)}
                   alt={report.product_name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = DEFAULT_COMMODITY_IMAGE;
+                  }}
                   className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
                 />
                 <div>

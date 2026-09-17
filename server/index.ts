@@ -754,7 +754,7 @@ app.post('/api/consumer-report', async (req, res) => {
       reference_id: newReport.reference_id,
       product_name: newReport.product_name,
       brand: newReport.brand,
-      product_image: newReport.product_image.length < 1000 ? newReport.product_image : null,
+      product_image: newReport.product_image || null,
       violations_summary: newReport.violations_summary,
       consumer_note: newReport.consumer_note,
       status: newReport.status,
