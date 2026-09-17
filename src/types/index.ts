@@ -16,6 +16,7 @@ export type AppScreen =
   | 'inspection_report'
   | 'inspection_history'
   | 'compliance_chat'
+  | 'manak_ai_offline'
   | 'officer_consumer_reports'
   | 'officer_profile'
   // Consumer

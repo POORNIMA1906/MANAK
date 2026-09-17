@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
 import { BottomNav } from '../common/BottomNav';
-import { Camera, Globe, AlertTriangle, CheckCircle2, ChevronRight, TrendingUp, FileText, Inbox, Bot, Sparkles } from 'lucide-react';
+import { Camera, Globe, AlertTriangle, CheckCircle2, ChevronRight, TrendingUp, FileText, Inbox, Bot, Sparkles, Cpu, WifiOff } from 'lucide-react';
 import { getRecordImage, DEFAULT_COMMODITY_IMAGE } from '../../utils/imageUtils';
 
 export const OfficerDashboardScreen: React.FC = () => {
@@ -169,8 +169,32 @@ export const OfficerDashboardScreen: React.FC = () => {
             </div>
             <div className="flex items-center space-x-2 flex-shrink-0">
               <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center space-x-1">
-                <Sparkles className="w-3 h-3 text-purple-600" />
+                <Sparkles className="w-3.5 h-3.5 text-purple-600" />
                 <span>AI Chatbot</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </div>
+
+          {/* Feature 5: MANAK AI OFFLINE (100% On-Device Neural Retrieval) */}
+          <div
+            onClick={() => navigateTo('manak_ai_offline')}
+            className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-sm hover:border-teal-300 hover:shadow-md cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
+          >
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-700 via-emerald-600 to-cyan-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Cpu className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                  MANAK AI OFFLINE
+                </h3>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <span className="text-[10px] font-bold bg-teal-50 text-teal-800 px-2.5 py-0.5 rounded-full border border-teal-200 flex items-center space-x-1">
+                <WifiOff className="w-3.5 h-3.5 text-teal-600" />
+                <span>100% Offline</span>
               </span>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
             </div>

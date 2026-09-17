@@ -19,6 +19,7 @@ import { AnalysisResultsScreen } from './components/screens/AnalysisResultsScree
 import { InspectionReportScreen } from './components/screens/InspectionReportScreen';
 import { InspectionHistoryScreen } from './components/screens/InspectionHistoryScreen';
 import { ComplianceChatScreen } from './components/screens/ComplianceChatScreen';
+import { OfflineComplianceChatScreen } from './components/screens/OfflineComplianceChatScreen';
 import { OfficerConsumerReportsScreen } from './components/screens/OfficerConsumerReportsScreen';
 import { OfficerProfileScreen } from './components/screens/OfficerProfileScreen';
 
@@ -76,6 +77,8 @@ export const App: React.FC = () => {
         return <InspectionHistoryScreen />;
       case 'compliance_chat':
         return <ComplianceChatScreen />;
+      case 'manak_ai_offline':
+        return <OfflineComplianceChatScreen />;
       case 'officer_consumer_reports':
         return <OfficerConsumerReportsScreen />;
       case 'officer_profile':
