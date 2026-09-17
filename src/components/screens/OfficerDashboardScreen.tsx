@@ -2,7 +2,8 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
 import { BottomNav } from '../common/BottomNav';
-import { Camera, Link2, AlertTriangle, CheckCircle2, ChevronRight, TrendingUp, FileText, Inbox, Bot } from 'lucide-react';
+import { Camera, Globe, AlertTriangle, CheckCircle2, ChevronRight, TrendingUp, FileText, Inbox, Bot, Sparkles } from 'lucide-react';
+import { getRecordImage, DEFAULT_COMMODITY_IMAGE } from '../../utils/imageUtils';
 
 export const OfficerDashboardScreen: React.FC = () => {
   const { navigateTo, inspections, setAnalysisData, consumerReports } = useApp();
@@ -29,162 +30,150 @@ export const OfficerDashboardScreen: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-2">
             {/* Stat 1 */}
-            <div className="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-subtle flex flex-col justify-between">
+            <div className="bg-gradient-to-br from-blue-50/90 via-white to-blue-50/50 rounded-xl p-2.5 border border-blue-200/80 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-600 leading-tight">
+                <span className="text-[10px] font-bold text-slate-600 leading-tight">
                   Total<br />Inspections
                 </span>
-                <div className="w-5 h-5 rounded-md bg-manak-navy/10 text-manak-navy flex items-center justify-center">
+                <div className="w-5 h-5 rounded-md bg-blue-600 text-white flex items-center justify-center shadow-xs">
                   <TrendingUp className="w-3 h-3" />
                 </div>
               </div>
               <div className="flex items-baseline space-x-1">
-                <span className="text-lg font-extrabold text-slate-900 mono">{totalInspections}</span>
+                <span className="text-lg font-black text-blue-950 mono">{totalInspections}</span>
               </div>
             </div>
 
             {/* Stat 2 */}
-            <div className="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-subtle flex flex-col justify-between">
+            <div className="bg-gradient-to-br from-red-50/90 via-white to-red-50/50 rounded-xl p-2.5 border border-red-200/80 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-600 leading-tight">
+                <span className="text-[10px] font-bold text-slate-600 leading-tight">
                   Violations<br />Flagged
                 </span>
-                <div className="w-5 h-5 rounded-md bg-red-50 text-manak-red flex items-center justify-center">
+                <div className="w-5 h-5 rounded-md bg-red-600 text-white flex items-center justify-center shadow-xs">
                   <AlertTriangle className="w-3 h-3" />
                 </div>
               </div>
               <div className="flex items-baseline space-x-1">
-                <span className="text-lg font-extrabold text-manak-red mono">{violationsFound}</span>
+                <span className="text-lg font-black text-red-600 mono">{violationsFound}</span>
               </div>
             </div>
 
             {/* Stat 3 */}
-            <div className="bg-white rounded-xl p-2.5 border border-slate-200/90 shadow-subtle flex flex-col justify-between">
+            <div className="bg-gradient-to-br from-amber-50/90 via-white to-amber-50/50 rounded-xl p-2.5 border border-amber-200/80 shadow-xs flex flex-col justify-between">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-slate-600 leading-tight">
+                <span className="text-[10px] font-bold text-slate-600 leading-tight">
                   Unsigned<br />Reports
                 </span>
-                <div className="w-5 h-5 rounded-md bg-amber-50 text-manak-amber flex items-center justify-center">
+                <div className="w-5 h-5 rounded-md bg-amber-500 text-white flex items-center justify-center shadow-xs">
                   <FileText className="w-3 h-3" />
                 </div>
               </div>
               <div className="flex items-baseline space-x-1">
-                <span className="text-lg font-extrabold text-manak-amber mono">{pendingReports}</span>
+                <span className="text-lg font-black text-amber-700 mono">{pendingReports}</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section: Four Main Features */}
-        <section className="space-y-2.5">
-          {/* Feature 1: Scan Products */}
-          <div
+        {/* Section: Side-by-Side Quick Actions (Same Color, Icon + Short Name, No Descriptions) */}
+        <section className="grid grid-cols-2 gap-2.5">
+          {/* Action 1: Scan Product */}
+          <button
             onClick={() => navigateTo('scan_camera')}
-            className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-slate-300 cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
+            className="group relative overflow-hidden rounded-2xl p-3.5 bg-gradient-to-br from-[#0A3663] via-[#0E4984] to-[#082E55] text-white shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex flex-col justify-between border border-blue-400/20 text-left min-h-[96px]"
           >
-            <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-manak-navy text-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                <Camera className="w-5 h-5 text-manak-orange" />
+            <div className="flex items-center justify-between w-full">
+              <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                <Camera className="w-5 h-5 text-amber-300" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-semibold text-slate-900 leading-tight">
-                    Scan Products
-                  </h3>
-                  <span className="text-[10px] font-medium bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-100 flex-shrink-0">
-                    Camera
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                  Scan product packaging using camera
-                </p>
-              </div>
+              <span className="text-[9.5px] font-bold bg-white/15 text-blue-100 px-2 py-0.5 rounded-full border border-white/20">
+                Camera
+              </span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2" />
-          </div>
+            <div className="flex items-center justify-between w-full mt-2.5">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-white">
+                Scan Product
+              </span>
+              <ChevronRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </button>
 
-          {/* Feature 2: Check E-Commerce */}
-          <div
+          {/* Action 2: Check URL */}
+          <button
             onClick={() => navigateTo('check_url')}
-            className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-slate-300 cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
+            className="group relative overflow-hidden rounded-2xl p-3.5 bg-gradient-to-br from-[#0A3663] via-[#0E4984] to-[#082E55] text-white shadow-md hover:shadow-lg active:scale-[0.98] transition-all flex flex-col justify-between border border-blue-400/20 text-left min-h-[96px]"
           >
-            <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-manak-navy flex items-center justify-center flex-shrink-0 border border-blue-100">
-                <Link2 className="w-5 h-5" />
+            <div className="flex items-center justify-between w-full">
+              <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform">
+                <Globe className="w-5 h-5 text-sky-300" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-semibold text-slate-900 leading-tight">
-                    Check the Product via URL
-                  </h3>
-                  <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full border border-slate-200 flex-shrink-0">
-                    Online
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                  Check online listings from Amazon, Flipkart &amp; more
-                </p>
-              </div>
+              <span className="text-[9.5px] font-bold bg-white/15 text-blue-100 px-2 py-0.5 rounded-full border border-white/20">
+                Online
+              </span>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2" />
-          </div>
+            <div className="flex items-center justify-between w-full mt-2.5">
+              <span className="text-xs sm:text-sm font-bold tracking-tight text-white">
+                Check URL
+              </span>
+              <ChevronRight className="w-4 h-4 text-white/60 group-hover:text-white group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </button>
+        </section>
 
+        {/* Section: Citizen Grievance & MANAK Assistant (Clean, Professional, No Heavy Text) */}
+        <section className="space-y-2.5">
           {/* Feature 3: Citizen Grievance */}
           <div
             onClick={() => navigateTo('officer_consumer_reports')}
-            className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-slate-300 cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
+            className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-sm hover:border-amber-300 hover:shadow-md cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
           >
-            <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border ${
-                pendingGrievances > 0
-                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : 'bg-slate-50 text-slate-600 border-slate-200'
-              }`}>
-                <Inbox className="w-5 h-5" />
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Inbox className="w-5 h-5 text-white" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-semibold text-slate-900 leading-tight">
-                    Citizen Grievance
-                  </h3>
-                  {pendingGrievances > 0 && (
-                    <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200 flex-shrink-0">
-                      {pendingGrievances} Active
-                    </span>
-                  )}
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                  Review complaints reported by consumers
-                </p>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                  Citizen Grievance
+                </h3>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2" />
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              {pendingGrievances > 0 ? (
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full border border-amber-200">
+                  {pendingGrievances} Active
+                </span>
+              ) : (
+                <span className="text-[10px] font-medium bg-slate-100 text-slate-600 px-2.5 py-0.5 rounded-full">
+                  All Clear
+                </span>
+              )}
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
+            </div>
           </div>
 
-          {/* Feature 4: MANAK Assistant (Chatbot) */}
+          {/* Feature 4: MANAK Assistant */}
           <div
             onClick={() => navigateTo('compliance_chat')}
-            className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-sm hover:border-slate-300 cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
+            className="bg-white rounded-2xl p-3.5 border border-slate-200/90 shadow-sm hover:border-purple-300 hover:shadow-md cursor-pointer active:scale-[0.99] transition-all group flex items-center justify-between"
           >
-            <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-              <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center flex-shrink-0 border border-purple-100">
-                <Bot className="w-5 h-5" />
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm">
+                <Bot className="w-5 h-5 text-white" />
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-sm font-semibold text-slate-900 leading-tight">
-                    MANAK Assistant
-                  </h3>
-                  <span className="text-[10px] font-semibold bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full border border-purple-200 flex-shrink-0">
-                    AI Chatbot
-                  </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5 leading-snug">
-                  Ask any question about rules, standards &amp; penalties
-                </p>
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-slate-900 leading-tight">
+                  MANAK Assistant
+                </h3>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform flex-shrink-0 ml-2" />
+            <div className="flex items-center space-x-2 flex-shrink-0">
+              <span className="text-[10px] font-bold bg-purple-100 text-purple-800 px-2.5 py-0.5 rounded-full border border-purple-200 flex items-center space-x-1">
+                <Sparkles className="w-3 h-3 text-purple-600" />
+                <span>AI Chatbot</span>
+              </span>
+              <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-transform" />
+            </div>
           </div>
         </section>
 
@@ -204,7 +193,7 @@ export const OfficerDashboardScreen: React.FC = () => {
             <div className="bg-white rounded-xl p-6 border border-slate-200 text-center space-y-2">
               <FileText className="w-8 h-8 text-slate-300 mx-auto" />
               <p className="text-xs text-slate-500">No inspections recorded yet.</p>
-              <p className="text-[11px] text-slate-400">Use "Scan Product Label" or "Check E-Commerce URL" above to start an audit.</p>
+              <p className="text-[11px] text-slate-400">Use "Scan Product" or "Check URL" above to start an audit.</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -219,10 +208,15 @@ export const OfficerDashboardScreen: React.FC = () => {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2.5">
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 text-slate-600 text-xs font-bold">
-                        {record.product.brand.charAt(0)}
-                      </div>
-                      <div>
+                      <img
+                        src={getRecordImage(record)}
+                        alt={record.product.title}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = DEFAULT_COMMODITY_IMAGE;
+                        }}
+                        className="w-10 h-10 rounded-lg object-cover border border-slate-200 flex-shrink-0"
+                      />
+                      <div className="min-w-0">
                         <h4 className="text-xs font-bold text-slate-900 truncate max-w-[170px]">
                           {record.product.title}
                         </h4>
