@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
-import { Lock, KeyRound, ArrowRight, User } from 'lucide-react';
+import { Lock, KeyRound, ArrowRight, User, AlertCircle, ShieldCheck } from 'lucide-react';
 
 export const OfficerLoginScreen: React.FC = () => {
   const { loginOfficer } = useApp();
   const [badgeId, setBadgeId] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!badgeId.trim() || !password.trim()) return;
+    const cleanId = badgeId.trim().toUpperCase();
+    const cleanPass = password.trim();
+
+    if (!cleanId || !cleanPass) {
+      setError('Please enter Employee ID and Password.');
+      return;
+    }
+
+    if (cleanId !== 'GOV26034' || cleanPass !== '123456') {
+      setError('Invalid Employee ID or Password. Access denied.');
+      return;
+    }
+
+    setError(null);
     setLoading(true);
     setTimeout(() => {
-      loginOfficer(badgeId, password);
+      loginOfficer(cleanId, cleanPass);
     }, 300);
   };
 
@@ -32,6 +46,13 @@ export const OfficerLoginScreen: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm space-y-3.5">
+          {error && (
+            <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+              <span className="font-medium">{error}</span>
+            </div>
+          )}
+
           <div>
             <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
               Government / Employee ID
@@ -41,10 +62,14 @@ export const OfficerLoginScreen: React.FC = () => {
               <input
                 type="text"
                 value={badgeId}
-                onChange={e => setBadgeId(e.target.value)}
+                onChange={e => {
+                  setBadgeId(e.target.value);
+                  if (error) setError(null);
+                }}
                 required
                 className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono focus:outline-none focus:border-manak-navy"
-                placeholder="Enter Official Badge / Employee ID"
+                placeholder="Enter Employee ID"
+                autoComplete="off"
               />
             </div>
           </div>
@@ -58,10 +83,14 @@ export const OfficerLoginScreen: React.FC = () => {
               <input
                 type="password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  setPassword(e.target.value);
+                  if (error) setError(null);
+                }}
                 required
                 className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-mono focus:outline-none focus:border-manak-navy"
                 placeholder="Enter Password"
+                autoComplete="off"
               />
             </div>
           </div>

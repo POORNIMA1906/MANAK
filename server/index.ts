@@ -151,10 +151,10 @@ app.post('/api/auth/login', (req, res) => {
       success: true,
       token: `jwt_officer_${Date.now()}`,
       user: {
-        id: `usr-${id || 'officer'}`,
+        id: `usr-${id || 'GOV26034'}`,
         role: 'officer',
-        name: id ? `Officer ${id}` : 'Enforcement Official',
-        badge_id: id || 'LM-OFFICER-01',
+        name: id ? `Officer ${id}` : 'Officer GOV26034',
+        badge_id: id || 'GOV26034',
         zone: 'Legal Metrology Division'
       }
     });

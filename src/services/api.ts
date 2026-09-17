@@ -53,7 +53,7 @@ export async function loginApi(role: 'officer' | 'consumer', idOrPhone: string, 
     return {
       success: true,
       user: role === 'officer'
-        ? { id: 'usr-officer-01', role: 'officer', name: `Officer ${idOrPhone}`, badge_id: idOrPhone || 'LM-OFFICER-01', zone: 'Legal Metrology Division' }
+        ? { id: 'usr-officer-01', role: 'officer', name: `Officer ${idOrPhone || 'GOV26034'}`, badge_id: idOrPhone || 'GOV26034', zone: 'Legal Metrology Division' }
         : { id: 'usr-consumer-01', role: 'consumer', name: 'Citizen User', phone: idOrPhone || '' }
     };
   }

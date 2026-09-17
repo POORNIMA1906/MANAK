@@ -89,7 +89,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [officerProfile, setOfficerProfile] = useState({
     name: 'Enforcement Official',
-    badge_id: 'LM-OFFICER-01',
+    badge_id: 'GOV26034',
     zone: 'Legal Metrology Division',
     avatar: 'LM'
   });
