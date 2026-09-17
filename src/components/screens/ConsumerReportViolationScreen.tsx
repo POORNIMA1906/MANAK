@@ -3,9 +3,10 @@ import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
 import { AlertTriangle, CheckCircle2, Send, Upload, Camera, ShieldCheck, MapPin, Globe } from 'lucide-react';
 import { getCurrentGeoLocation, GeoLocationResult } from '../../services/locationService';
+import { FloatingProductChatbot } from '../common/FloatingProductChatbot';
 
 export const ConsumerReportViolationScreen: React.FC = () => {
-  const { navigateTo, currentProduct, currentEvaluations, isCompliant, submitNewConsumerReport } = useApp();
+  const { navigateTo, currentProduct, currentExtraction, currentEvaluations, isCompliant, submitNewConsumerReport } = useApp();
   const isEcom = currentProduct?.source_type === 'ecommerce';
   const [note, setNote] = useState(
     isEcom
@@ -135,6 +136,15 @@ export const ConsumerReportViolationScreen: React.FC = () => {
           Your report will be automatically routed to Zone 4 Delhi Enforcement Queue
         </p>
       </footer>
+
+      {/* Floating Legal Metrology AI Chatbot */}
+      <FloatingProductChatbot
+        product={currentProduct}
+        extraction={currentExtraction}
+        evaluations={currentEvaluations}
+        isCompliant={isCompliant}
+        bottomOffset="bottom-24"
+      />
     </div>
   );
 };

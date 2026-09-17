@@ -328,7 +328,8 @@ export async function syncQueueApi(queuedInspections: InspectionRecord[]) {
 
 export async function askComplianceChatApi(
   question: string,
-  history?: Array<{ sender: 'user' | 'assistant'; text: string }>
+  history?: Array<{ sender: 'user' | 'assistant'; text: string }>,
+  productContext?: string
 ) {
   const apiKey = getGeminiApiKey();
 
@@ -339,13 +340,17 @@ export async function askComplianceChatApi(
       'models/gemini-flash-lite-latest'
     ];
 
-    const systemInstruction = `You are the official MANAK Legal Metrology AI Assistant, an authoritative AI legal advisor expert in:
+    let systemInstruction = `You are the official MANAK Legal Metrology AI Assistant, an authoritative AI legal advisor expert in:
 1. The Legal Metrology Act, 2009 (Sections 18, 36, 49, etc.)
 2. Legal Metrology (Packaged Commodities) Rules, 2011 (Rule 6 mandatory declarations, Rule 7 numeral heights & area tables, Rule 9 declarations on retail packages, Rule 32 compounding fees, Sixth Schedule, etc.)
 3. GSR Amendments (including GSR 202(E) on e-commerce declarations, unit sale price, and standard sizes)
 4. Guidelines for online marketplaces (Amazon, Flipkart, Blinkit, Zepto, etc.)
 
-Provide structured, conversational, thorough, and clear answers like ChatGPT and Gemini. Use clear formatting, bullet points, bold highlights, and exact provisions where appropriate. At the very end of your response, add a standalone line starting with "Citation: " specifying the exact statutory rule, section, or notification reference (e.g. "Citation: Rule 6(1)(e), Legal Metrology (Packaged Commodities) Rules, 2011").`;
+Provide structured, conversational, thorough, and complete answers like ChatGPT and Gemini. Use clear formatting, bullet points, bold highlights, and exact provisions where appropriate. Always provide complete, fully concluded explanations; do not truncate or cut off mid-thought. At the very end of your response, add a standalone line starting with "Citation: " specifying the exact statutory rule, section, or notification reference (e.g. "Citation: Rule 6(1)(e), Legal Metrology (Packaged Commodities) Rules, 2011").`;
+
+    if (productContext && productContext.trim()) {
+      systemInstruction += `\n\n[CURRENT INSPECTED PRODUCT CONTEXT]\n${productContext.trim()}\n\nUse the above scanned product details and compliance evaluations to give precise, complete, and tailored legal metrology guidance for this specific product when asked.`;
+    }
 
     const contents: Array<{ role: 'user' | 'model'; parts: Array<{ text: string }> }> = [];
     const prefix = `${systemInstruction}\n\n`;
@@ -369,29 +374,57 @@ Provide structured, conversational, thorough, and clear answers like ChatGPT and
     for (const model of models) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/${model}:generateContent?key=${apiKey.trim()}`;
-        const res = await fetch(url, {
+        
+        // Attempt with thinkingBudget 0 to preserve all tokens for output text
+        const bodyWithNoThinking = {
+          contents,
+          generationConfig: {
+            temperature: 0.25,
+            maxOutputTokens: 4096,
+            thinkingConfig: { thinkingBudget: 0 }
+          }
+        };
+
+        let res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+          body: JSON.stringify(bodyWithNoThinking),
+          signal: AbortSignal.timeout(18000)
+        });
+
+        // Fallback without thinkingConfig if the endpoint rejects thinkingConfig
+        if (!res.ok && res.status === 400) {
+          const bodyFallback = {
             contents,
             generationConfig: {
-              temperature: 0.3,
-              maxOutputTokens: 1000
+              temperature: 0.25,
+              maxOutputTokens: 4096
             }
-          }),
-          signal: AbortSignal.timeout(15000)
-        });
+          };
+          res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyFallback),
+            signal: AbortSignal.timeout(18000)
+          });
+        }
 
         if (res.ok) {
           const data = await res.json();
-          const candidateText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (candidateText && candidateText.trim()) {
-            const fullText = candidateText.trim();
-            const citationMatch = fullText.match(/Citation:\s*([^\n\r]+)$/im);
-            const citation = citationMatch
-              ? citationMatch[1].trim()
-              : 'Legal Metrology (Packaged Commodities) Rules, 2011';
-            const cleanText = fullText.replace(/Citation:\s*([^\n\r]+)$/im, '').trim();
+          const candidateParts = data?.candidates?.[0]?.content?.parts || [];
+          const textPart = candidateParts.find((p: any) => p.text)?.text || '';
+          
+          if (textPart && textPart.trim()) {
+            const fullText = textPart.trim();
+            let cleanText = fullText;
+            let citation = 'Legal Metrology (Packaged Commodities) Rules, 2011';
+
+            // Extract citation only if explicitly present at the very end
+            const citationMatch = fullText.match(/\n\s*Citation:\s*([^\n\r]+)$/i);
+            if (citationMatch && citationMatch.index !== undefined) {
+              citation = citationMatch[1].trim();
+              cleanText = fullText.substring(0, citationMatch.index).trim();
+            }
 
             return {
               success: true,

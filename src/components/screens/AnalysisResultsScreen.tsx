@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
 import { generateInspectionPDF } from '../../services/pdfReportGenerator';
 import { evaluateEcommerceListing, EcommerceRuleResult } from '../../services/ecommerceRuleEngine';
+import { FloatingProductChatbot } from '../common/FloatingProductChatbot';
 import {
   CheckCircle2,
   AlertTriangle,
@@ -954,6 +955,16 @@ export const AnalysisResultsScreen: React.FC = () => {
           )}
         </button>
       </footer>
+
+      {/* Floating Legal Metrology AI Chatbot */}
+      <FloatingProductChatbot
+        product={currentProduct}
+        extraction={currentExtraction}
+        evaluations={currentEvaluations}
+        isCompliant={isCompliant}
+        totalPenalty={totalPenalty}
+        bottomOffset="bottom-24"
+      />
     </div>
   );
 };
