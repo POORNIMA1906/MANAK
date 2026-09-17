@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Header } from '../common/Header';
-import { AlertTriangle, CheckCircle2, Send, Upload, Camera, ShieldCheck, MapPin } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Send, Upload, Camera, ShieldCheck, MapPin, Globe } from 'lucide-react';
 import { getCurrentGeoLocation, GeoLocationResult } from '../../services/locationService';
 
 export const ConsumerReportViolationScreen: React.FC = () => {
   const { navigateTo, currentProduct, currentEvaluations, isCompliant, submitNewConsumerReport } = useApp();
-  const [note, setNote] = useState('Store was selling this pack above printed MRP with no tax disclaimer.');
+  const isEcom = currentProduct?.source_type === 'ecommerce';
+  const [note, setNote] = useState(
+    isEcom
+      ? 'E-commerce platform listing omitted mandatory declarations under Rule 6(10) of Packaged Commodities Rules 2011.'
+      : 'Store was selling this pack above printed MRP with no tax disclaimer.'
+  );
   const [geoLoc, setGeoLoc] = useState<GeoLocationResult | null>(null);
 
   useEffect(() => {
@@ -23,7 +28,7 @@ export const ConsumerReportViolationScreen: React.FC = () => {
 
   return (
     <div className="w-full h-full bg-[#F5F6F8] flex flex-col justify-between overflow-y-auto hide-scrollbar">
-      <Header title="Report Label Discrepancy" showBack showLogo />
+      <Header title={isEcom ? "Report E-Commerce Listing" : "Report Label Discrepancy"} showBack showLogo />
 
       <main className="p-4 space-y-4 my-auto">
         {/* Verification Status Card */}
@@ -44,12 +49,12 @@ export const ConsumerReportViolationScreen: React.FC = () => {
             </div>
             <div>
               <h2 className="text-sm font-bold">
-                {isCompliant ? 'Packaging Appears Compliant' : `${violations.length} Suspected Discrepancies`}
+                {isCompliant ? (isEcom ? 'Listing Appears Compliant' : 'Packaging Appears Compliant') : `${violations.length} Suspected Discrepancies`}
               </h2>
               <p className="text-[11px] text-slate-600">
                 {isCompliant
-                  ? 'All mandatory 2011 declarations were found on the label.'
-                  : 'The package violates statutory labeling requirements.'}
+                  ? (isEcom ? 'All mandatory Rule 6(10) declarations were found on listing.' : 'All mandatory 2011 declarations were found on the label.')
+                  : (isEcom ? 'The e-commerce listing violates statutory Rule 6(10) requirements.' : 'The package violates statutory labeling requirements.')}
               </p>
             </div>
           </div>
@@ -80,25 +85,39 @@ export const ConsumerReportViolationScreen: React.FC = () => {
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-subtle space-y-3">
           <div>
             <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
-              Add Note / Store Details (Optional)
+              Add Note / Discrepancy Details (Optional)
             </label>
             <textarea
               value={note}
               onChange={e => setNote(e.target.value)}
               rows={3}
-              placeholder="e.g. Shopkeeper charged ₹10 above printed MRP in Khan Market store..."
+              placeholder={isEcom ? "e.g. Seller did not mention country of origin or MRP tax disclaimer on listing..." : "e.g. Shopkeeper charged ₹10 above printed MRP in Khan Market store..."}
               className="w-full p-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:border-emerald-600"
             ></textarea>
           </div>
 
           <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-            <span className="text-slate-600 text-[11px] flex items-center gap-1 font-medium truncate pr-2">
-              <MapPin className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
-              <span>Geo-Tagging: {geoLoc?.address || 'GPS Coordinates Acquired'}</span>
-            </span>
-            <span className="text-[9px] bg-emerald-100 text-emerald-800 font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0">
-              GPS Verified
-            </span>
+            {isEcom ? (
+              <>
+                <span className="text-slate-600 text-[11px] flex items-center gap-1 font-medium truncate pr-2">
+                  <Globe className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                  <span className="truncate">URL Listing: {currentProduct?.ecommerce_platform ? currentProduct.ecommerce_platform.toUpperCase() : (currentProduct?.ecommerce_url || 'Online E-Commerce Platform')}</span>
+                </span>
+                <span className="text-[9px] bg-emerald-100 text-emerald-800 font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0">
+                  Online Listing
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-slate-600 text-[11px] flex items-center gap-1 font-medium truncate pr-2">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                  <span>Geo-Tagging: {geoLoc?.address || 'GPS Coordinates Acquired'}</span>
+                </span>
+                <span className="text-[9px] bg-emerald-100 text-emerald-800 font-mono font-bold px-1.5 py-0.5 rounded flex-shrink-0">
+                  GPS Verified
+                </span>
+              </>
+            )}
           </div>
 
           <button

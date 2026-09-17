@@ -38,7 +38,8 @@ export const AnalysisResultsScreen: React.FC = () => {
     isCompliant,
     totalViolations,
     totalPenalty,
-    finalizeInspection
+    finalizeInspection,
+    userRole
   } = useApp();
 
   const [activeMainTab, setActiveMainTab] = useState<'checklist' | 'raw'>('checklist');
@@ -58,6 +59,10 @@ export const AnalysisResultsScreen: React.FC = () => {
   }, [isEcommerce, currentExtraction, currentProduct]);
 
   const handleGenerateReport = async () => {
+    if (userRole === 'consumer') {
+      navigateTo('consumer_report');
+      return;
+    }
     const record = finalizeInspection(true);
     try {
       await generateInspectionPDF(record);
@@ -930,11 +935,23 @@ export const AnalysisResultsScreen: React.FC = () => {
       <footer className="bg-white border-t border-slate-200/90 p-3.5 pb-[calc(max(14px,env(safe-area-inset-bottom,0px))+4px)] shadow-nav relative z-20 flex-shrink-0">
         <button
           onClick={handleGenerateReport}
-          className="w-full py-3.5 px-4 rounded-xl bg-manak-navy hover:bg-slate-900 active:scale-98 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-md transition-all"
+          className={`w-full py-3.5 px-4 rounded-xl active:scale-98 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center space-x-2 shadow-md transition-all ${
+            userRole === 'consumer' ? 'bg-emerald-700 hover:bg-emerald-800' : 'bg-manak-navy hover:bg-slate-900'
+          }`}
         >
-          <FileText className="w-4 h-4 text-manak-orange" />
-          <span>Generate Official Evidentiary Report</span>
-          <ArrowRight className="w-4 h-4" />
+          {userRole === 'consumer' ? (
+            <>
+              <FileText className="w-4 h-4 text-emerald-300" />
+              <span>Proceed to Report Submission</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          ) : (
+            <>
+              <FileText className="w-4 h-4 text-manak-orange" />
+              <span>Generate Official Evidentiary Report</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </footer>
     </div>

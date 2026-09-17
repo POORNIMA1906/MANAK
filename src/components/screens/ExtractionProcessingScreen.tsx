@@ -16,7 +16,7 @@ export const ExtractionProcessingScreen: React.FC = () => {
       } else {
         clearInterval(interval);
         setTimeout(() => {
-          if (userRole === 'consumer' && currentProduct?.source_type !== 'ecommerce') {
+          if (userRole === 'consumer') {
             navigateTo('consumer_report');
           } else {
             navigateTo('analysis_results');
