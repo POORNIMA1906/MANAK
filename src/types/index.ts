@@ -100,6 +100,8 @@ export interface RuleEvaluation {
   explanation: string;
   citation: string;
   penalty: number;
+  confidence?: number;
+  confidence_basis?: string;
 }
 
 export interface InspectionRecord {
