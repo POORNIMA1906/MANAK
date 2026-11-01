@@ -9,7 +9,7 @@ This matters concretely for MANAK, where both officer and consumer flows expose 
 |---|---|---|
 | Officer → **Scan Product** (camera capture) | Photo of the physical package | The physical label → full Rule 6(1) checklist, no online exemptions |
 | Consumer → **Check a Product → Scan Label** | Photo of the physical package | Same as above |
-| Officer → **Check URL** (paste link) | E-commerce listing URL | The online listing → Rule 6(10), online-required/package-only split applies |
+| Officer → **Check URL** (paste link) | E-any code to github af listing URL | The online listing → Rule 6(10), online-required/package-only split applies |
 | Consumer → **Check a Product → Paste Link** | E-commerce listing URL | Same as above |
 
 The doc confirms both input paths share one backend ("same engine as officer path" / "same OCR/rule-engine backend"), which is exactly why this needs to be an explicit parameter rather than an assumption baked into the rule engine — without it, the split from the previous fix would silently leak into camera scans too.

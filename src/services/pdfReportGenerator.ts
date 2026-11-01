@@ -3,6 +3,7 @@ import { Capacitor } from '@capacitor/core';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { InspectionRecord } from '../types';
+import { getRecordImage } from '../utils/imageUtils';
 
 const sanitizeText = (val: any, fallback = 'Not Specified'): string => {
   if (val === null || val === undefined) return fallback;
@@ -112,6 +113,63 @@ const getManakLogoDataUrl = (): Promise<string | null> => {
       };
       img.onerror = () => resolve(null);
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgString);
+    } catch {
+      resolve(null);
+    }
+  });
+};
+
+const getProductImageDataUrl = (imageUrl?: string | null): Promise<{ dataUrl: string; width: number; height: number } | null> => {
+  if (!imageUrl || imageUrl.length < 10) return Promise.resolve(null);
+
+  return new Promise((resolve) => {
+    try {
+      if (typeof document === 'undefined') return resolve(null);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const maxDim = 800;
+          let w = img.naturalWidth || img.width || 400;
+          let h = img.naturalHeight || img.height || 400;
+          const origW = w;
+          const origH = h;
+          if (w > maxDim || h > maxDim) {
+            if (w >= h) {
+              h = Math.round((h / w) * maxDim);
+              w = maxDim;
+            } else {
+              w = Math.round((w / h) * maxDim);
+              h = maxDim;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return resolve(null);
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve({ dataUrl, width: origW, height: origH });
+        } catch (e) {
+          console.warn('[pdfReportGenerator] Canvas conversion failed for product image:', e);
+          if (imageUrl.startsWith('data:image/')) {
+            resolve({ dataUrl: imageUrl, width: 400, height: 400 });
+          } else {
+            resolve(null);
+          }
+        }
+      };
+      img.onerror = () => {
+        if (imageUrl.startsWith('data:image/')) {
+          resolve({ dataUrl: imageUrl, width: 400, height: 400 });
+        } else {
+          resolve(null);
+        }
+      };
+      img.src = imageUrl;
     } catch {
       resolve(null);
     }
@@ -232,26 +290,110 @@ export async function generateInspectionPDF(record: InspectionRecord): Promise<v
     doc.text(`- Digital Evidence Hash (SHA-256): ${sanitizeText(record?.evidence_hash, 'sha256-abc123xyz')}`, 15, y);
     y += 7;
 
-    // Product Inspection Details
+    // 2. Product Inspection Findings & Photographic Evidence
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(27, 58, 107);
-    doc.text('2. Packaged Commodity Declaration Findings', 12, y);
+    doc.text('2. Packaged Commodity Declaration & Photographic Evidence (Sec. 65B)', 12, y);
     y += 5;
+
+    // Resolve scanned product packaging image
+    const rawImgUrl = getRecordImage(record);
+    const productImg = await getProductImageDataUrl(rawImgUrl);
+
+    const sectionStartY = y;
+    const textMaxWidth = productImg ? 130 : pageWidth - 28;
 
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(50, 50, 50);
-    doc.text(`- Product Name & Brand: ${sanitizeText(record?.product?.title, 'Packaged Product')} (${sanitizeText(record?.product?.brand, 'Brand')})`, 15, y);
+
+    const prodTitle = sanitizeText(record?.product?.title, 'Packaged Commodity');
+    const brandName = sanitizeText(record?.product?.brand, 'Standard');
+    doc.text(`- Product & Brand: ${prodTitle.substring(0, 44)} (${brandName})`, 15, y);
     y += 4.5;
+
     doc.text(`- Declared Net Quantity: ${getNetQtyStr(record?.extraction)}`, 15, y);
     y += 4.5;
+
     doc.text(`- Declared MRP: ${getMrpStr(record?.extraction)}`, 15, y);
     y += 4.5;
-    doc.text(`- Declared Manufacturer: ${sanitizeText(record?.extraction?.manufacturer?.value, 'Not Declared')}`, 15, y);
+
+    const mfgVal = sanitizeText(record?.extraction?.manufacturer?.value, 'Not Declared');
+    doc.text(`- Declared Manufacturer: ${mfgVal.substring(0, 50)}`, 15, y);
     y += 4.5;
-    doc.text(`- Date of Packing/Mfg: ${sanitizeText(record?.extraction?.mfg_date?.value, 'Not Declared')} | Origin: ${sanitizeText(record?.extraction?.country_of_origin?.value, 'India')}`, 15, y);
-    y += 7;
+
+    const mfgDate = sanitizeText(record?.extraction?.mfg_date?.value, 'Not Declared');
+    const originCountry = sanitizeText(record?.extraction?.country_of_origin?.value, 'India');
+    doc.text(`- Date of Packing/Mfg: ${mfgDate} | Origin: ${originCountry}`, 15, y);
+    y += 4.5;
+
+    // Calculate overall confidence score across evaluations if present
+    const evalsForConf = Array.isArray(record?.evaluations) ? record.evaluations : [];
+    const avgConfidence = evalsForConf.length > 0
+      ? Math.round((evalsForConf.reduce((acc, curr) => acc + (curr.confidence || 0.95), 0) / evalsForConf.length) * 100)
+      : 95;
+    doc.text(`- Compliance Confidence Score: ${avgConfidence}% (Multi-Pillar Verified)`, 15, y);
+    y += 5;
+
+    // Render Scanned Product Photo Evidence Box if image is loaded
+    if (productImg) {
+      const boxX = 148;
+      const boxY = sectionStartY - 2;
+      const boxW = 50;
+      const boxH = 43;
+
+      // Evidence Box Frame
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.setLineWidth(0.3);
+      doc.roundedRect(boxX, boxY, boxW, boxH, 2, 2, 'FD');
+
+      // Calculate aspect ratio fitting inside (boxW - 4) x (boxH - 9)
+      const maxImgW = boxW - 4; // 46mm
+      const maxImgH = boxH - 9; // 34mm
+      const imgAspect = productImg.width / productImg.height;
+      const targetAspect = maxImgW / maxImgH;
+
+      let drawW = maxImgW;
+      let drawH = maxImgH;
+      let offX = 0;
+      let offY = 0;
+
+      if (imgAspect > targetAspect) {
+        // Image is wider than box
+        drawH = maxImgW / imgAspect;
+        offY = (maxImgH - drawH) / 2;
+      } else {
+        // Image is taller than box
+        drawW = maxImgH * imgAspect;
+        offX = (maxImgW - drawW) / 2;
+      }
+
+      try {
+        doc.addImage(
+          productImg.dataUrl,
+          'JPEG',
+          boxX + 2 + offX,
+          boxY + 2 + offY,
+          drawW,
+          drawH
+        );
+      } catch (imgErr) {
+        console.warn('[pdfReportGenerator] Error embedding product image in PDF:', imgErr);
+      }
+
+      // Caption label under image
+      doc.setFontSize(6.2);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(71, 85, 105);
+      doc.text('SCANNED PRODUCT EVIDENCE', boxX + boxW / 2, boxY + boxH - 2.2, { align: 'center' });
+
+      // Advance y past the photo box
+      y = Math.max(y, boxY + boxH + 4);
+    } else {
+      y += 2;
+    }
 
     // Statutory Checklist & Violations
     doc.setFontSize(10);

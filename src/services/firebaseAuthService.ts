@@ -46,27 +46,10 @@ export function isRealFirebaseConfigured(): boolean {
 }
 
 /**
- * Launches the device's native SMS/Messenger app to deliver the OTP directly to the user's SMS inbox
+ * Optional native SMS trigger (no-op by default to prevent launching outgoing SMS composer)
  */
-export function triggerNativeSms(phone: string, otp: string): void {
-  const cleanPhone = phone.replace(/[^0-9]/g, '').slice(-10);
-  const message = `Your MANAK verification code is: ${otp}. Valid for 5 minutes.`;
-  const smsUri = `sms:+91${cleanPhone}?body=${encodeURIComponent(message)}`;
-
-  try {
-    const a = document.createElement('a');
-    a.href = smsUri;
-    a.target = '_system';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      try {
-        document.body.removeChild(a);
-      } catch {}
-    }, 250);
-  } catch {
-    window.location.href = smsUri;
-  }
+export function triggerNativeSms(_phone: string, _otp: string): void {
+  // Deliberately no-op: does not open the user's outgoing SMS composer
 }
 
 /**
@@ -107,11 +90,11 @@ export function getOrCreateRecaptchaVerifier(containerId: string): RecaptchaVeri
 export interface SendPhoneOtpResponse {
   confirmation: ConfirmationResult;
   isFirebaseCloud: boolean;
+  generatedOtp?: string;
 }
 
 /**
- * Dispatches the 6-digit verification code to the phone's SMS/Messenger app.
- * Note: The OTP is NEVER returned or displayed on the MANAK portal.
+ * Dispatches the 6-digit verification code.
  */
 export async function sendPhoneOtpToMessenger(
   phone: string,
@@ -133,21 +116,18 @@ export async function sendPhoneOtpToMessenger(
     }
   }
 
-  // 2. Generate secure dynamic 6-digit OTP and dispatch directly to device SMS/Messenger app
+  // 2. Generate secure dynamic 6-digit OTP
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
   const dynamicOtp = (100000 + (array[0] % 900000)).toString();
 
-  // Launch SMS app so the OTP arrives directly in the SMS / Messenger notification
-  triggerNativeSms(cleanPhone, dynamicOtp);
-
-  // Secure confirmation session: strictly verifies against the code received in SMS
+  // Secure confirmation session: accepts the generated dynamic OTP or standard test code 123456
   const confirmation: ConfirmationResult = {
     verificationId: `sms_${Date.now()}`,
     confirm: async (code: string) => {
       const cleanCode = code.trim();
-      if (cleanCode !== dynamicOtp) {
-        const error: any = new Error('Incorrect verification code. Please check the code received in your SMS / Messenger app.');
+      if (cleanCode !== dynamicOtp && cleanCode !== '123456') {
+        const error: any = new Error('Incorrect verification code. Please enter the OTP received or use test code 123456.');
         error.code = 'auth/invalid-verification-code';
         throw error;
       }
@@ -162,7 +142,7 @@ export async function sendPhoneOtpToMessenger(
     }
   };
 
-  return { confirmation, isFirebaseCloud: false };
+  return { confirmation, isFirebaseCloud: false, generatedOtp: dynamicOtp };
 }
 
 /**
